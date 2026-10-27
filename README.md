@@ -195,8 +195,7 @@ tests/            # 无需 API Key 的流水线测试
 
 ## 许可证
 
-本项目采用 [MIT License](LICENSE)。
-
-- `samples/` 与 `corpus/` 下的样例论文与语料均为本仓库脚本（`scripts/`）生成的**合成内容**，随项目同许可分发；
-- README 中引用的第三方开源项目（LLM-AES、EssayJudge 等）版权归原作者所有，此处仅作方案致谢与出处标注；
-- 外部模型服务（智谱/DeepSeek/OpenAI）各自的服务条款与数据政策独立于本许可证。
+本项目代码采用 [MIT License](LICENSE)；仓库内第三方内容与依赖的许可归属
+（含 PyMuPDF 的 AGPL/商业双许可注意事项）统一记录在
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+外部模型服务（智谱/DeepSeek/OpenAI）的服务条款与数据政策独立于本仓库许可证。
