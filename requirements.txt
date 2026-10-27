@@ -7,9 +7,9 @@ PyYAML==6.0.3
 
 # paper_check 查重模块
 numpy==2.4.6; python_version < "3.12"
-numpy==2.5.2; python_version >= "3.12"
+numpy==2.5.3; python_version >= "3.12"
 fastapi==0.141.1
-uvicorn==0.52.4
+uvicorn==0.54.0
 python-multipart==0.0.32
 # 可选：接入句向量模型后自动启用语义改写检测
 # sentence-transformers>=3.0

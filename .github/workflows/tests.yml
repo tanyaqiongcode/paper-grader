@@ -50,8 +50,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: 安装依赖
-        run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: 安装依赖（锁定版本）
+        run: pip install -r requirements.lock -r requirements-dev.txt
       - name: Pytest（覆盖率门槛 45%）
         run: pytest tests/ -v --cov=paper_check --cov=paper_grader --cov-report=term-missing --cov-fail-under=45
       - name: 上传覆盖率报告
@@ -65,11 +65,12 @@ jobs:
   pip-audit:
     name: pip-audit（后端依赖已知漏洞）
     runs-on: ubuntu-latest
-    continue-on-error: true   # 暂不阻塞，结果作为依赖周报输入
+    # 评审整改：已知漏洞直接阻断；确认为误报时用 pip-audit 的 --ignore-vuln 列明编号，不放宽门禁
+    continue-on-error: false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
       - run: pip install pip-audit
-      - run: pip-audit -r requirements.txt
+      - run: pip-audit -r requirements.lock
