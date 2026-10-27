@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import ipaddress
 import json
 import random
 import re
@@ -22,19 +23,33 @@ class LLMError(RuntimeError):
     pass
 
 
-LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+LOCAL_HOSTS = frozenset({"localhost", "::1"})
+
+
+def _is_loopback_host(host: str) -> bool:
+    """hostname 是否本机回环：localhost（含 *.localhost，RFC 6761）、127.0.0.0/8、::1。"""
+    host = (host or "").lower().rstrip(".")
+    if not host:
+        return False
+    if host == "localhost" or host.endswith(".localhost"):
+        return True
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
 
 
 def is_local_endpoint(base_url: str) -> bool:
     """按 URL 的 hostname 精确判断是否本机端点（Ollama 等本地模型无需 API Key）。
 
     不能用子串匹配：如 https://localhost.evil.com 或 ?x=127.0.0.1 会被误判为本地。
+    hostname 提取保证判断对象是主机名本身；回环判断覆盖完整 127.0.0.0/8 段。
     """
     try:
         host = urlparse(base_url.strip()).hostname
     except ValueError:
         return False
-    return (host or "").lower() in LOCAL_HOSTS
+    return _is_loopback_host(host or "")
 
 
 def parse_json_loose(text: str) -> dict:

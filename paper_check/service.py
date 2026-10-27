@@ -36,25 +36,47 @@ _tasks_lock = threading.Lock()
 MAX_UPLOAD_BYTES = int(os.environ.get("PAPER_CHECK_MAX_UPLOAD_MB", "10")) * 1024 * 1024
 MAX_TASKS = int(os.environ.get("PAPER_CHECK_MAX_TASKS", "20"))
 TASK_TTL_SECONDS = int(os.environ.get("PAPER_CHECK_TASK_TTL", "7200"))  # 2 小时
+RATE_PER_MIN = int(os.environ.get("PAPER_CHECK_RATE_PER_MIN", "30"))  # 每 IP 每分钟上传上限
 ACCESS_TOKEN = os.environ.get("PAPER_CHECK_TOKEN", "").strip()
 # `python -m paper_check serve --db/--reports` 经环境变量传入；未设置时用默认路径
 DB_PATH = Path(os.environ.get(ENV_DB) or DEFAULT_DB)
 REPORTS_DIR = Path(os.environ.get(ENV_REPORTS) or DEFAULT_REPORTS)
 
+# TTL 只回收终态任务；排队/运行中的任务有真实工作挂着，不回收
+_ACTIVE_STATES = ("queued", "running")
+_upload_log: dict[str, list[float]] = {}  # client ip -> 上传时间戳（滑动窗口限速）
+
+
+def _is_expired(task: dict, now: float | None = None) -> bool:
+    """终态任务超过保留期即过期；进行中任务永不过期。"""
+    if task.get("status") in _ACTIVE_STATES:
+        return False
+    now = now if now is not None else time.time()
+    return now - task.get("created_ts", now) > TASK_TTL_SECONDS
+
 
 def _cleanup_expired() -> None:
-    """惰性 TTL 清理：移除超过保留期或超过总量的最旧任务。"""
+    """惰性 TTL 清理：回收过期终态任务；容量淘汰时先淘汰终态、不动进行中。"""
     now = time.time()
     with _tasks_lock:
-        expired = [
-            tid for tid, t in _tasks.items() if now - t.get("created_ts", now) > TASK_TTL_SECONDS
-        ]
-        for tid in expired:
+        for tid in [tid for tid, t in _tasks.items() if _is_expired(t, now)]:
             _tasks.pop(tid, None)
-        # 仍超上限则按创建时间淘汰最旧
+        # 仍超上限：先淘汰最旧终态任务；全部进行中则放行（由 MAX_TASKS 硬上限兜底）
         while len(_tasks) > MAX_TASKS:
-            oldest = min(_tasks, key=lambda tid: _tasks[tid].get("created_ts", 0))
-            _tasks.pop(oldest, None)
+            finished = [tid for tid, t in _tasks.items() if t.get("status") not in _ACTIVE_STATES]
+            if not finished:
+                break
+            _tasks.pop(min(finished, key=lambda tid: _tasks[tid].get("created_ts", 0)), None)
+
+
+def _check_rate_limit(ip: str) -> None:
+    """每 IP 滑动窗口限速，防单点刷任务占满队列。"""
+    now = time.time()
+    window = _upload_log.setdefault(ip, [])
+    window[:] = [ts for ts in window if now - ts < 60]
+    if len(window) >= RATE_PER_MIN:
+        raise HTTPException(429, "提交过于频繁，请稍后再试")
+    window.append(now)
 
 
 def _require_token(request: Request) -> None:
@@ -90,6 +112,7 @@ async def submit(request: Request, file: UploadFile = File(...), use_semantic: b
     _require_token(request)
     if not file.filename or not file.filename.lower().endswith((".pdf", ".docx", ".txt", ".md")):
         raise HTTPException(400, "仅支持 PDF / DOCX / TXT / MD")
+    _check_rate_limit(request.client.host if request.client else "anonymous")
     _cleanup_expired()
     with _tasks_lock:
         if len(_tasks) >= MAX_TASKS:
@@ -148,6 +171,9 @@ def task_status(task_id: str, request: Request):
     t = _tasks.get(task_id)
     if not t:
         raise HTTPException(404, "任务不存在")
+    if _is_expired(t):
+        # 不在此处弹出：保证后续访问一致地得到 410，由 _cleanup_expired 统一回收
+        raise HTTPException(410, "任务已超过保留期，请重新提交")
     return {k: v for k, v in t.items() if k != "report_path"}
 
 
@@ -157,6 +183,8 @@ def report(task_id: str, request: Request):
     t = _tasks.get(task_id)
     if not t or t.get("status") != "done":
         raise HTTPException(404, "报告不存在或未完成")
+    if _is_expired(t):
+        raise HTTPException(410, "报告已超过保留期，请重新提交检测")
     return FileResponse(
         t["report_path"],
         media_type="text/html",
