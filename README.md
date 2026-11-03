@@ -4,6 +4,8 @@
 
 本仓库包含两个模块：
 
+> **English**: CLI tool that batch-grades Chinese academic papers with LLMs — pluggable YAML rubrics, per-dimension scoring with evidence quotes and confidence levels, map-reduce for long theses, resumable caching, Excel grade sheets. Also includes a local plagiarism-check prototype (superseded by [PaperLens](https://github.com/tanyaqiongcode/paperlens)).
+
 1. **paper_grader** —— 面向教师的**中文学术论文 AI 辅助批量批改**命令行工具：把一个文件夹里的论文（期刊投稿、研究生课程论文、学位/毕业论文）批量交给大模型，按可插拔的评分量规逐维度打分，产出**单篇批改报告（Markdown）+ 全批成绩汇总（Excel）**。
 2. **paper_check** —— **本地查重引擎**（三级漏斗架构原型）：指纹粗筛 → 句级精排 → 语义兜底，产出逐句染色、来源可对照的 HTML 查重报告，支持异步任务 Web 服务。
    > 🔀 **演进说明**：查重功能已演进为独立项目 **[PaperLens](https://github.com/tanyaqiongcode/paperlens)**（FastAPI + React 一站式平台：查重 + AIGC 检测 + 联网核查 + 降重改写）。新需求建议直接使用 PaperLens；本模块保留为轻量原型，不再积极演进。
