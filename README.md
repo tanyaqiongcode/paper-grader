@@ -6,6 +6,7 @@
 
 1. **paper_grader** —— 面向教师的**中文学术论文 AI 辅助批量批改**命令行工具：把一个文件夹里的论文（期刊投稿、研究生课程论文、学位/毕业论文）批量交给大模型，按可插拔的评分量规逐维度打分，产出**单篇批改报告（Markdown）+ 全批成绩汇总（Excel）**。
 2. **paper_check** —— **本地查重引擎**（三级漏斗架构原型）：指纹粗筛 → 句级精排 → 语义兜底，产出逐句染色、来源可对照的 HTML 查重报告，支持异步任务 Web 服务。
+   > 🔀 **演进说明**：查重功能已演进为独立项目 **[PaperLens](https://github.com/tanyaqiongcode/paperlens)**（FastAPI + React 一站式平台：查重 + AIGC 检测 + 联网核查 + 降重改写）。新需求建议直接使用 PaperLens；本模块保留为轻量原型，不再积极演进。
 
 > ⚠️ 定位声明：AI 评分为**辅助**而非替代。每个分数都附带原文证据引用与置信度，低置信度论文自动标记"需人工复评"，最终成绩由教师核定。查重结果同样定位为初筛参考，报告保留完整证据链供人工复核。
 
@@ -199,3 +200,15 @@ tests/            # 无需 API Key 的流水线测试
 （含 PyMuPDF 的 AGPL/商业双许可注意事项）统一记录在
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 外部模型服务（智谱/DeepSeek/OpenAI）的服务条款与数据政策独立于本仓库许可证。
+
+---
+
+## 相关项目
+
+- [PaperLens](https://github.com/tanyaqiongcode/paperlens) — 论文查重 + AIGC 检测 + 联网核查 + 降重改写一站式平台（本仓库 paper_check 模块的演进版）
+- [Bilingual-Term-Extract](https://github.com/tanyaqiongcode/Bilingual-Term-Extract) — 平行文本双语术语提取（统计召回 + LLM 精筛，TBX 导出）
+- [nlp-learning-site](https://github.com/tanyaqiongcode/nlp-learning-site) — 面向文科生的 NLP 学习站（含 LLM 评测素养专题）
+- [Mini-CAT](https://github.com/tanyaqiongcode/mini-cat) — 浏览器端翻译记忆 CAT 工具（零依赖，数据不出本机）
+- [multi-align](https://github.com/tanyaqiongcode/multi-align) — 多语平行语料句对齐工作台（Gale-Church）
+- [weread-shelf-organizer](https://github.com/tanyaqiongcode/weread-shelf-organizer) — 微信读书书架自动整理 Skill
+- 更多作品见 [github.com/tanyaqiongcode](https://github.com/tanyaqiongcode)
