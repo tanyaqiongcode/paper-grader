@@ -14,7 +14,7 @@ jobs:
     name: Gitleaks（防密扫描）
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: gitleaks/gitleaks-action@v3
@@ -25,7 +25,7 @@ jobs:
     name: Lint（ruff check + format + mypy）
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
@@ -46,7 +46,7 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
@@ -68,7 +68,7 @@ jobs:
     # 评审整改：已知漏洞直接阻断；确认为误报时用 pip-audit 的 --ignore-vuln 列明编号，不放宽门禁
     continue-on-error: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
