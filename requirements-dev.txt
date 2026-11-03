@@ -3,4 +3,4 @@ pytest==9.2.0
 pytest-cov==7.1.0
 # 代码规范（与 .github/workflows 一致）
 ruff==0.16.6
-mypy==2.3.1
+mypy==2.4.1
