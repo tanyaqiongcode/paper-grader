@@ -56,7 +56,7 @@ jobs:
         run: pytest tests/ -v --cov=paper_check --cov=paper_grader --cov-report=term-missing --cov-fail-under=45
       - name: 上传覆盖率报告
         if: matrix.python-version == '3.13'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: .coverage
