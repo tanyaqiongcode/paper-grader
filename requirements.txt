@@ -1,5 +1,5 @@
 # 版本已锁定（精确版本，与 CI 一致；升级前先跑 tests/）
-PyMuPDF==1.28.2
+PyMuPDF==2.1
 python-docx==1.2.0
 openpyxl==3.1.5
 httpx==0.28.1
