@@ -3,7 +3,7 @@ PyMuPDF==1.28.2
 python-docx==1.2.0
 openpyxl==3.1.5
 httpx==0.28.1
-PyYAML==6.0.3
+PyYAML==6.0.4
 
 # paper_check 查重模块
 numpy==2.4.6; python_version < "3.12"
